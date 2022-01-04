@@ -19,7 +19,7 @@ jobs:
 
       - name: Build Artifact
         id: buildAllApks
-        uses: gradle/gradle-build-actions@2.1.0
+        uses: gradle/gradle-build-action@v2.1.0
         with:
           gradle-version: current
           wrapper-cache-enabled: true
