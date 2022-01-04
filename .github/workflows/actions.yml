@@ -23,7 +23,5 @@ jobs:
         uses: gradle/gradle-build-action@v2.1.0
         with:
           gradle-version: current
-          wrapper-cache-enabled: true
-          dependencies-cache-enabled: true
-          configuration-cache-enabled: true
           arguments: assembleRelease
+          build-root-directory: ./backend
