@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: JDK environment
+        uses: actions/setup-java@v2
+        with:
+          java-version: 1.8
+
+      - name: Build Artifact
+        id: buildAllApks
+        uses: gradle/gradle-build-actions@2.1.0
+        with:
+          gradle-version: current
+          wrapper-cache-enabled: true
+          dependencies-cache-enabled: true
+          configuration-cache-enabled: true
+          arguments: assembleRelease
