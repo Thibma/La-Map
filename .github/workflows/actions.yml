@@ -18,13 +18,13 @@ jobs:
           java-version: 8
           distribution: 'temurin'
 
-      - name: Build Artifact
-        id: buildAllApks
-        uses: gradle/gradle-build-action@v2.1.0
-        with:
-          gradle-version: current
-          arguments: assembleRelease
-          build-root-directory: ./frontend
+      #- name: Build Artifact
+      #  id: buildAllApks
+      #  uses: gradle/gradle-build-action@v2.1.0
+      #  with:
+      #    gradle-version: current
+      #    arguments: assembleRelease
+      #    build-root-directory: ./frontend
 
       #- name: Sign App
       #  id: signApp
