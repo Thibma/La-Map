@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1078103692664",
+    "project_id": "la-map-337313",
+    "storage_bucket": "la-map-337313.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1078103692664:android:8cece2fc60f1b6df2f248d",
+        "android_client_info": {
+          "package_name": "fr.thibma.la_map"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1078103692664-2on32n2vurvfe0c0jl15o0p6kmvld7es.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "fr.thibma.la_map",
+            "certificate_hash": "f47fa747587f0f89dc9fda00f57e704a7cce280c"
+          }
+        },
+        {
+          "client_id": "1078103692664-uk5l11vsjuua057ka14ulk55gi0t60ue.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHzv0sG7aDM53kj9RwaFzWPecoE1OcbKU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1078103692664-uk5l11vsjuua057ka14ulk55gi0t60ue.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1078103692664-qjqok4a30v4aoqqpthpjn972pbli115h.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1078103692664-qjqok4a30v4aoqqpthpjn972pbli115h</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>1078103692664-2on32n2vurvfe0c0jl15o0p6kmvld7es.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyC5WzWAHspyaqSqnG2CoMVcTp1dqybG0Ko</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1078103692664</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>fr.thibma.laMap</string>
+	<key>PROJECT_ID</key>
+	<string>la-map-337313</string>
+	<key>STORAGE_BUCKET</key>
+	<string>la-map-337313.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1078103692664:ios:e6b0f5529f1e8b9e2f248d</string>
+</dict>
+</plist>
