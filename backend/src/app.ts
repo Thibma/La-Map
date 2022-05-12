@@ -1,24 +1,39 @@
-import express, { Application, Request, Response, NextFunction } from "express"
-import "dotenv/config"
-import bodyparser from "body-parser"
-import Routes from "./routes"
-import Connect from "./connect"
+import express, { Application} from "express";
+import "dotenv/config";
+import bodyparser from "body-parser";
+import { Routes } from "./routes";
+import { Server } from "http";
+import mongoose from "mongoose";
 
-const app: Application = express()
+class App {
+    public app: Application = express.application;
+    public server: Server = new Server();
+    public PORT = process.env.PORT;
+    public mongoUrl = process.env.MONGO_URL!;
+    public routes: Routes;
 
-app.use(bodyparser.json())
-app.use(bodyparser.urlencoded({ extended: true }))
+    constructor() {
+        this.mongoSetup();
 
-app.get("/", (req: Request, res: Response) => {
-    res.send("Hello World !")
-})
+        this.app = express();
+        this.config();
 
-const PORT = process.env.PORT
-const db = "mongodb://mongo:27017/db"
+        this.server = this.app.listen(this.PORT, () => {
+            return console.log('server is running on ' + this.PORT);
+        });
 
-Connect({ db })
-Routes({ app })
+        this.routes = new Routes(this.app);
+        this.routes.routes();
+    }
 
-app.listen(PORT, () => {
-    console.log(`Server is running on the port : ${PORT}`)
-})
+    private config() {
+        this.app.use(bodyparser.json());
+        this.app.use(bodyparser.urlencoded({ extended: true }));
+    }
+
+    private mongoSetup() {
+        mongoose.connect(this.mongoUrl);
+    }
+}
+
+export default new App().app;

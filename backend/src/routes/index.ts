@@ -1,14 +1,17 @@
-import { RoutesInput } from "../types/types"
+import { RoutesInput } from "../types/Localisation.type"
 import UserController from "../controllers/User.controller"
+import express, { Request, Response } from 'express'
 
-export default ({ app }: RoutesInput) => {
-    app.post("/api/user", async (req, res) => {
-        const user = await UserController.CreateUser({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            email: req.body.email,
-        })
+export class Routes {
+    private app: express.Application;
 
-        return res.send({ user })
-    })
+    constructor(app: express.Application) {
+        this.app = app;
+    }
+
+    public routes() {
+        this.app.route('/').get((req: Request, res: Response) => {
+            res.send("Hello World !");
+        });
+    }
 }
