@@ -6,7 +6,8 @@ export type IUserDocument = IUser & Document;
 export const UserSchema = new Schema({
     pseudo: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     idFirebase: {
         type: String,

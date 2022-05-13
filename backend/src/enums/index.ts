@@ -1,1 +1,1 @@
-export * from './visibility.enum';
+export * from './Visibility.enum';
