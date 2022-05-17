@@ -1,5 +1,5 @@
 import { Request, Response } from "express"; 
-import { IUser } from "../interfaces";
+import { IData, IUser } from "../interfaces";
 import { UserService } from "../services";
 
 export class UserController {
@@ -7,6 +7,7 @@ export class UserController {
     
     constructor() {
         this.signUp = this.signUp.bind(this);
+        this.signIn = this.signIn.bind(this);
         this.service = new UserService();
     }
 
@@ -18,6 +19,14 @@ export class UserController {
         const created = await this.service.createUser(body);
         const status = created.error ? 400 : 202;
         response.status(status).send(created);
+    }
+
+    public async signIn(request: Request, response: Response) {
+        const { idFirebase } = request.params;
+
+        const updated = await this.service.firebaseSignIn(idFirebase);
+        const status = updated.error ? 400 : 202;
+        response.status(status).send(updated);
     }
 
 }

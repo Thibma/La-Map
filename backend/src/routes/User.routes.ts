@@ -13,12 +13,13 @@ export class UserRoutes {
 
     public configureRoutes() {
         const authentificationController = AuthentificationController.getInstance();
-        const services = new UserService();
         const userController = new UserController();
 
         this.app.use(authentificationController.authentificateToken);
         this.app.route(`/users`)
             .post(userController.signUp);
+
+        this.app.use(`/users/signin/:idFirebase`, userController.signIn);
 
         return this.app;
     }
