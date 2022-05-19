@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "1078103692664-2on32n2vurvfe0c0jl15o0p6kmvld7es.apps.googleusercontent.com",
+          "client_id": "1078103692664-jgot4s2airdorugajm1mr0s3lqd1i7v6.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "fr.thibma.la_map",
-            "certificate_hash": "f47fa747587f0f89dc9fda00f57e704a7cce280c"
+            "certificate_hash": "b33ff9767fe9117593be73274f615445cd7b05f0"
           }
         },
         {
@@ -37,6 +37,13 @@
             {
               "client_id": "1078103692664-uk5l11vsjuua057ka14ulk55gi0t60ue.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "1078103692664-qjqok4a30v4aoqqpthpjn972pbli115h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "fr.thibma.laMap"
+              }
             }
           ]
         }
