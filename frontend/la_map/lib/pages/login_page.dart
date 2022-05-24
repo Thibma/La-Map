@@ -1,14 +1,12 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:la_map/pages/signup_page.dart';
 import 'package:la_map/services/authentication.dart';
-import 'package:http/http.dart' as http;
 
 import 'dart:io';
 
-import 'package:la_map/models/user_model.dart';
+import 'package:la_map/services/network.dart';
+import 'package:la_map/utils/alerdialog_error.dart';
 import 'package:la_map/utils/constants.dart';
 
 class LoginPage extends StatefulWidget {
@@ -114,16 +112,16 @@ class _LoginPageState extends State<LoginPage> {
           height: 30,
         ),
         onPressed: (() async {
-          User? user = await Authentication.signInWithGogle(context: context);
-          if (user != null) {
-            print(user);
-            final response = await http.get(
-                Uri.parse('http://192.168.1.143:8000/users/signin/${user.uid}'),
-                headers: {'api-token': 'test'});
-            if (response.statusCode == 202) {
-              print(UserModel.fromJson(jsonDecode(response.body)));
-            }
-          }
+          await Authentication.signInWithGogle(context: context)
+              .then((user) => Network()
+                  .login(user!.uid)
+                  .then((user) => print(user.pseudo))
+                  .onError((error, stackTrace) => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => SignUpPage(uid: user.uid)))))
+              .onError((error, stackTrace) =>
+                  errorDialog(context, error.toString()));
         }),
         style: ButtonStyle(
             elevation: MaterialStateProperty.all(5.0),
@@ -245,22 +243,26 @@ class _LoginPageState extends State<LoginPage> {
     return FutureBuilder(
       future: Authentication.initializeFirebase(context: context),
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return AlertDialog(
-            title: Text('Erreur de connexion'),
-            actions: [
-              ElevatedButton(
-                onPressed: () => {exit(0)},
-                child: Text('Fermer'),
-              )
-            ],
-          );
-        } else if (snapshot.connectionState == ConnectionState.done) {
-          return home();
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+            );
+          default:
+            if (snapshot.hasError) {
+              return AlertDialog(
+                title: Text('Erreur de connexion'),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () => {exit(0)},
+                    child: Text('Fermer'),
+                  )
+                ],
+              );
+            } else {
+              return home();
+            }
         }
-        return CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
-        );
       },
     );
   }

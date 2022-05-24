@@ -42,6 +42,10 @@ dependencies:
   google_sign_in: ^5.3.0
   google_fonts: ^2.3.2
   http: ^0.13.4
+  image_picker: ^0.8.5+3
+  get: ^4.6.5
+  image_cropper: ^2.0.3
+  firebase_storage: ^10.2.16
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +76,7 @@ flutter:
 
   assets:
       - assets/logos/google.png
+      - assets/profile_picture.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

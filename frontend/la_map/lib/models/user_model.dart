@@ -3,7 +3,7 @@ class UserModel {
   final String id;
   final String idFirebase;
   final String idImage;
-  final List<String> friends;
+  final List<dynamic> friends;
   //final DateTime lastConnexion;
   //final List<Place> places;
 
