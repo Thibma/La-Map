@@ -122,7 +122,9 @@ class _LoginPageState extends State<LoginPage> {
           await Authentication.signInWithGogle(context: context)
               .then((user) => Network()
                   .login(user!.uid)
-                  .then((user) => Get.offAll(HomePage()))
+                  .then((user) => Get.offAll(HomePage(
+                        user: user,
+                      )))
                   .onError((error, stackTrace) =>
                       Get.to(() => SignUpPage(uid: user.uid))))
               .onError((error, stackTrace) {
@@ -296,7 +298,9 @@ class _LoginPageState extends State<LoginPage> {
             emailTextController.text, passwordTextController.text)
         .then((firebaseUser) async {
       await Network().login(firebaseUser!.uid).then((user) {
-        Get.offAll(HomePage());
+        Get.offAll(HomePage(
+          user: user,
+        ));
       }).onError(
           (error, stackTrace) => Get.to(SignUpPage(uid: firebaseUser.uid)));
     }).onError((error, stackTrace) {

@@ -218,9 +218,9 @@ class _SignupPageState extends State<SignUpPage> {
     reference.putFile(_image.value!).then((p0) {
       Network()
           .signUp(textController.text, _uid, reference.fullPath)
-          .then((value) {
+          .then((user) {
         Navigator.pop(context);
-        Get.offAll(HomePage());
+        Get.offAll(HomePage(user: user));
       }).onError((error, stackTrace) {
         Navigator.pop(context);
         Get.defaultDialog(
