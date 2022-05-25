@@ -46,6 +46,7 @@ dependencies:
   get: ^4.6.5
   image_cropper: ^2.0.3
   firebase_storage: ^10.2.16
+  location: ^4.4.0
 
 dev_dependencies:
   flutter_test:

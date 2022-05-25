@@ -2,6 +2,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:la_map/models/user_model.dart';
+import 'package:location/location.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, required User user})
@@ -17,10 +18,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late User user;
   late GoogleMapController mapController;
+  Location location = Location();
 
-  final LatLng _center = const LatLng(45.521563, -122.677433);
+  late LocationData _locationData;
 
-  void _onMapCreated(GoogleMapController controller) {
+  final LatLng initialPosition = const LatLng(45.521563, -122.677433);
+
+  void _onMapCreated(GoogleMapController controller) async {
     mapController = controller;
   }
 
@@ -49,16 +53,33 @@ class _HomePageState extends State<HomePage> {
             }
           },
         ),
-        //Image.network(url.toString()),
         backgroundColor: Color(0xFF527DAA),
         actions: [
           IconButton(
               onPressed: () => {print("test")}, icon: const Icon(Icons.person))
         ],
       ),
-      body: GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(target: _center, zoom: 11.0),
+      body: Stack(
+        children: [
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            myLocationEnabled: true,
+            initialCameraPosition:
+                CameraPosition(target: initialPosition, zoom: 11.0),
+            zoomControlsEnabled: false,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: FloatingActionButton(
+                onPressed: () => print("test"),
+                backgroundColor: Color(0xFF527DAA),
+                child: Icon(Icons.add),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -72,6 +93,33 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     user = widget._user;
+    getLocation();
     super.initState();
+  }
+
+  void getLocation() async {
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _locationData = await location.getLocation();
+    mapController.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
+        target: LatLng(_locationData.latitude!, _locationData.longitude!),
+        zoom: 16.0)));
   }
 }
