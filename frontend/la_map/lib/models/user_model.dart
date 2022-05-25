@@ -1,4 +1,4 @@
-class UserModel {
+class User {
   final String pseudo;
   final String id;
   final String idFirebase;
@@ -7,7 +7,7 @@ class UserModel {
   //final DateTime lastConnexion;
   //final List<Place> places;
 
-  const UserModel({
+  const User({
     required this.pseudo,
     required this.id,
     required this.idFirebase,
@@ -15,8 +15,8 @@ class UserModel {
     required this.idImage,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
       pseudo: json['pseudo'],
       id: json['_id'],
       friends: json['friends'],

@@ -22,12 +22,31 @@ class Network {
     }
   }
 
-  Future<UserModel> login(String uid) async {
+  // SignIn
+  Future<User> login(String uid) async {
     final response = await http.get(Uri.parse(address + "/users/signin/$uid"),
         headers: apiToken);
 
     try {
-      return UserModel.fromJson(apiResponse(response).message);
+      return User.fromJson(apiResponse(response).message);
+    } catch (e) {
+      throw (apiResponse(response).message);
+    }
+  }
+
+  // SignUp
+  Future<User> signUp(String pseudo, String uid, String imageUrl) async {
+    final response = await http.post(
+      Uri.parse(address + "/users"),
+      headers: {
+        apiToken.keys.first: apiToken.values.first,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {'pseudo': pseudo, 'idFirebase': uid, 'idImage': imageUrl},
+    );
+
+    try {
+      return User.fromJson(apiResponse(response).message);
     } catch (e) {
       throw (apiResponse(response).message);
     }

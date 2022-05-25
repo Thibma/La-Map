@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:la_map/pages/home_page.dart';
+import 'package:la_map/services/network.dart';
 import 'package:la_map/utils/alerdialog_error.dart';
 import 'package:la_map/utils/constants.dart';
 import 'package:image_picker/image_picker.dart';
@@ -202,10 +204,32 @@ class _SignupPageState extends State<SignUpPage> {
       return;
     }
 
+    Get.defaultDialog(
+      title: "Connexion",
+      content: CircularProgressIndicator(
+        color: Colors.blue,
+      ),
+      barrierDismissible: false,
+    );
+
     final profileStorage =
         FirebaseStorage.instance.ref().child("profilePictures");
     final reference = profileStorage.child(_uid);
-    reference.putFile(_image.value!).then((p0) => print("send"));
+    reference.putFile(_image.value!).then((p0) {
+      Network()
+          .signUp(textController.text, _uid, reference.fullPath)
+          .then((value) {
+        Navigator.pop(context);
+        Get.offAll(HomePage());
+      }).onError((error, stackTrace) {
+        Navigator.pop(context);
+        Get.defaultDialog(
+          title: "Erreur de connexion",
+          content: Text("Il y a eu un problème lors de l'inscription."),
+          textConfirm: "OK",
+        );
+      });
+    });
   }
 
   @override

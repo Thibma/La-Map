@@ -1,13 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:la_map/pages/signup_page.dart';
-import 'package:la_map/services/authentication.dart';
-
 import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:la_map/pages/home_page.dart';
+import 'package:la_map/pages/signup_page.dart';
+import 'package:la_map/pages/widgets/signup_password.dart';
+import 'package:la_map/services/authentication.dart';
 import 'package:la_map/services/network.dart';
 import 'package:la_map/utils/alerdialog_error.dart';
 import 'package:la_map/utils/constants.dart';
+import 'package:get/get.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key? key}) : super(key: key);
@@ -17,6 +19,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final emailTextController = TextEditingController();
+  final passwordTextController = TextEditingController();
+
   Widget _buildEmailTextField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,6 +38,7 @@ class _LoginPageState extends State<LoginPage> {
           decoration: kBoxDecorationStyle,
           height: 60.0,
           child: TextField(
+            controller: emailTextController,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(color: Colors.black38),
             decoration: InputDecoration(
@@ -63,6 +69,7 @@ class _LoginPageState extends State<LoginPage> {
           decoration: kBoxDecorationStyle,
           height: 60.0,
           child: TextField(
+            controller: passwordTextController,
             obscureText: true,
             decoration: InputDecoration(
                 border: InputBorder.none,
@@ -81,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
       padding: EdgeInsets.symmetric(vertical: 25.0),
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: (() => print('test')),
+        onPressed: (() => signInButton()),
         style: ButtonStyle(
             elevation: MaterialStateProperty.all(5.0),
             padding: MaterialStateProperty.all(EdgeInsets.all(15.0)),
@@ -115,13 +122,12 @@ class _LoginPageState extends State<LoginPage> {
           await Authentication.signInWithGogle(context: context)
               .then((user) => Network()
                   .login(user!.uid)
-                  .then((user) => print(user.pseudo))
-                  .onError((error, stackTrace) => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => SignUpPage(uid: user.uid)))))
-              .onError((error, stackTrace) =>
-                  errorDialog(context, error.toString()));
+                  .then((user) => Get.offAll(HomePage()))
+                  .onError((error, stackTrace) =>
+                      Get.to(() => SignUpPage(uid: user.uid))))
+              .onError((error, stackTrace) {
+            errorDialog(context, error.toString());
+          });
         }),
         style: ButtonStyle(
             elevation: MaterialStateProperty.all(5.0),
@@ -145,7 +151,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildSignupTextView() {
     return GestureDetector(
-      onTap: (() => print('signup')),
+      onTap: (() => signUpDialog(context)),
       child: RichText(
         text: TextSpan(
           children: [
@@ -265,5 +271,39 @@ class _LoginPageState extends State<LoginPage> {
         }
       },
     );
+  }
+
+  void signInButton() {
+    if (emailTextController.text.isEmpty ||
+        passwordTextController.text.isEmpty) {
+      Get.snackbar(
+        "Erreur de connexion",
+        "Merci de remplir tous les champs",
+        backgroundColor: Colors.white,
+      );
+      return;
+    }
+
+    Get.defaultDialog(
+      title: "Connexion",
+      content: CircularProgressIndicator(
+        color: Colors.blue,
+      ),
+      barrierDismissible: false,
+    );
+
+    Authentication.signInWithEmailPassword(
+            emailTextController.text, passwordTextController.text)
+        .then((firebaseUser) async {
+      await Network().login(firebaseUser!.uid).then((user) {
+        Get.offAll(HomePage());
+      }).onError(
+          (error, stackTrace) => Get.to(SignUpPage(uid: firebaseUser.uid)));
+    }).onError((error, stackTrace) {
+      Navigator.pop(context);
+      Get.snackbar("Erreur lors de la connexion",
+          "L'adresse mail et/ou le mot de passe sont incorrects.",
+          backgroundColor: Colors.white);
+    });
   }
 }

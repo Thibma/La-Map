@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
 import 'package:la_map/pages/login_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -11,7 +12,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       theme: ThemeData(
         textTheme: GoogleFonts.nunitoTextTheme(Theme.of(context).textTheme),
       ),
