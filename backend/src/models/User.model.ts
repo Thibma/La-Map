@@ -25,23 +25,15 @@ export const UserSchema = new Schema({
             default: []
         }
     ],
-    places: [
-        {
-            type: Types.ObjectId,
-            required: true,
-            ref: 'Place',
-            default: []
-        }
-    ],
     lastConnexion: {
         type: Date,
         required: true,
-        default: new Date((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate() - 1),  
+        default: new Date((new Date()).getFullYear(), (new Date()).getMonth(), (new Date()).getDate() - 1),
     },
 },
-{
-    versionKey: false,
-    timestamps: true
-});
+    {
+        versionKey: false,
+        timestamps: true
+    });
 
 export const UserModel = model<IUserDocument>('User', UserSchema);

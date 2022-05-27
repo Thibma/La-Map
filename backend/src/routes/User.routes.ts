@@ -1,13 +1,11 @@
 import { Application } from "express";
 import { AuthentificationController, UserController } from "../controllers";
-import { UserService } from "../services";
-
 
 export class UserRoutes {
 
     private app: Application;
 
-    constructor (app: Application) {
+    constructor(app: Application) {
         this.app = app;
     }
 

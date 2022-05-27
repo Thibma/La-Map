@@ -1,7 +1,7 @@
-import express, { Application} from "express";
+import express, { Application } from "express";
 import "dotenv/config";
 import bodyparser from "body-parser";
-import { UserRoutes } from "./routes";
+import { PlaceRoutes, UserRoutes } from "./routes";
 import { Server } from "http";
 import mongoose from "mongoose";
 
@@ -35,6 +35,7 @@ class App {
 
     private configRoutes() {
         new UserRoutes(this.app).configureRoutes();
+        new PlaceRoutes(this.app).configureRoutes();
     }
 }
 

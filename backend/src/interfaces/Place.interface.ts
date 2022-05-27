@@ -4,8 +4,9 @@ import { Localisation } from "../types";
 
 export interface IPlace extends IData {
     id?: Id,
+    userId: String,
     name: String,
-    withWho?: String[],
+    withWho?: String,
     photo?: String,
     coordinates: Localisation,
     date: Date,

@@ -8,6 +8,5 @@ export interface IUser extends IData {
     idFirebase: String,
     idImage: String,
     friends: String[] | IUserDocument[],
-    places: String[], //| Place[],
     lastConnexion?: Date;
 }

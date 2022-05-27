@@ -2,10 +2,12 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:la_map/models/user_model.dart';
+import 'package:la_map/pages/create_place_page.dart';
 import 'package:location/location.dart';
+import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key, required User user})
+  HomePage({Key? key, required User user})
       : _user = user,
         super(key: key);
 
@@ -73,7 +75,7 @@ class _HomePageState extends State<HomePage> {
             child: Align(
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
-                onPressed: () => print("test"),
+                onPressed: () => Get.to(CreatePlacePage()),
                 backgroundColor: Color(0xFF527DAA),
                 child: Icon(Icons.add),
               ),

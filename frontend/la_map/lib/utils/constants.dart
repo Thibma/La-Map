@@ -27,6 +27,18 @@ final kBoxDecorationStyleDown = BoxDecoration(
   ],
 );
 
+final kBoxDecorationStyleLight = BoxDecoration(
+  color: Color(0xFF527DAA),
+  borderRadius: BorderRadius.circular(10.0),
+  boxShadow: const [
+    BoxShadow(
+      color: Colors.black12,
+      blurRadius: 6.0,
+      offset: Offset(0, 2),
+    ),
+  ],
+);
+
 const kHintTextStyle = TextStyle(
   color: Colors.black38,
 );
