@@ -5,6 +5,7 @@ import 'package:la_map/models/user_model.dart';
 import 'package:la_map/pages/create_place_page.dart';
 import 'package:location/location.dart';
 import 'package:get/get.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key, required User user})
@@ -75,7 +76,10 @@ class _HomePageState extends State<HomePage> {
             child: Align(
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
-                onPressed: () => Get.to(CreatePlacePage()),
+                onPressed: () => Get.to(CreatePlacePage(
+                  initialPosition:
+                      LatLng(_locationData.latitude!, _locationData.longitude!),
+                )),
                 backgroundColor: Color(0xFF527DAA),
                 child: Icon(Icons.add),
               ),
@@ -115,6 +119,15 @@ class _HomePageState extends State<HomePage> {
     if (_permissionGranted == PermissionStatus.denied) {
       _permissionGranted = await location.requestPermission();
       if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    LocationPermission permission;
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
         return;
       }
     }

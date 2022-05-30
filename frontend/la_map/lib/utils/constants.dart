@@ -15,6 +15,18 @@ final kBoxDecorationStyle = BoxDecoration(
   ],
 );
 
+final kBoxDecorationStyleTranspa = BoxDecoration(
+  color: Color.fromARGB(168, 93, 93, 93),
+  borderRadius: BorderRadius.circular(10.0),
+  boxShadow: const [
+    BoxShadow(
+      color: Colors.black12,
+      blurRadius: 6.0,
+      offset: Offset(0, 2),
+    ),
+  ],
+);
+
 final kBoxDecorationStyleDown = BoxDecoration(
   color: Color.fromARGB(187, 62, 137, 162),
   borderRadius: BorderRadius.circular(10.0),

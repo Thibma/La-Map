@@ -6,10 +6,10 @@ import 'dart:convert';
 
 class Network {
   // Malakoff
-  //final String address = "http://192.168.1.143:8000";
+  final String address = "http://192.168.1.143:8000";
 
   // Maison
-  final String address = "http://192.168.1.33:8000";
+  //final String address = "http://192.168.1.33:8000";
   final Map<String, String> apiToken = {"api-token": "test"};
 
   ResponseModel apiResponse(http.Response response) {

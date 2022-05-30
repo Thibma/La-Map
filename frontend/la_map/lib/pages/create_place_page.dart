@@ -1,9 +1,20 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:la_map/pages/add_localisation_page.dart';
 import 'package:la_map/utils/constants.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 class CreatePlacePage extends StatefulWidget {
-  CreatePlacePage({Key? key}) : super(key: key);
+  CreatePlacePage({Key? key, required LatLng initialPosition})
+      : _initialPosition = initialPosition,
+        super(key: key);
+
+  final LatLng _initialPosition;
 
   @override
   _CreatePlaceState createState() => _CreatePlaceState();
@@ -13,6 +24,15 @@ class _CreatePlaceState extends State<CreatePlacePage> {
   final nameTextController = TextEditingController();
   final withWhoTextController = TextEditingController();
   final noteTextController = TextEditingController();
+
+  late LatLng initialPosition;
+
+  final selectedPosition = Rxn<LatLng>();
+
+  final _image = Rxn<File>();
+  final _picker = ImagePicker();
+
+  DateTime selectedDate = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +169,44 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: (() => print("")),
+                              onPressed: (() async {
+                                selectedPosition.value = await Get.to(
+                                    AddLocalisationPage(
+                                        initialPosition: initialPosition));
+                                print(selectedPosition);
+                              }),
+                              style: ButtonStyle(
+                                  elevation: MaterialStateProperty.all(5.0),
+                                  padding: MaterialStateProperty.all(
+                                      EdgeInsets.all(15.0)),
+                                  backgroundColor: MaterialStateProperty.all(
+                                      Color(0xFF527DAA)),
+                                  shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(30.0)))),
+                              child: Obx(
+                                () => Text(
+                                  selectedPosition.value == null
+                                      ? 'Ajouter une localisation *'
+                                      : "Localisation ajoutée",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    letterSpacing: 1.5,
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: (() => _openImagePicker()),
                               style: ButtonStyle(
                                   elevation: MaterialStateProperty.all(5.0),
                                   padding: MaterialStateProperty.all(
@@ -161,13 +218,35 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                                           borderRadius:
                                               BorderRadius.circular(30.0)))),
                               child: Text(
-                                'Ajouter une localisation',
+                                "Ajouter une photo",
                                 style: TextStyle(
                                   color: Colors.white,
                                   letterSpacing: 1.5,
                                   fontSize: 18.0,
                                   fontWeight: FontWeight.bold,
                                 ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          Align(
+                            alignment: Alignment.center,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: Obx(
+                                () => _image.value == null
+                                    ? Image.asset(
+                                        'assets/profile_picture.png',
+                                        width: 100,
+                                        height: 100,
+                                      )
+                                    : Image.file(
+                                        _image.value!,
+                                        width: 100.0,
+                                        height: 100.0,
+                                      ),
                               ),
                             ),
                           ),
@@ -182,5 +261,23 @@ class _CreatePlaceState extends State<CreatePlacePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _openImagePicker() async {
+    await _picker.pickImage(source: ImageSource.gallery).then((photo) async {
+      await ImageCropper().cropImage(
+          sourcePath: photo!.path,
+          aspectRatioPresets: [
+            CropAspectRatioPreset.square
+          ]).then((croppedPhoto) {
+        _image.value = File(croppedPhoto!.path);
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    initialPosition = widget._initialPosition;
+    super.initState();
   }
 }
