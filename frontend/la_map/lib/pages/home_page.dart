@@ -1,6 +1,7 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:la_map/models/place_model.dart';
 import 'package:la_map/models/user_model.dart';
 import 'package:la_map/pages/create_place_page.dart';
 import 'package:location/location.dart';
@@ -27,7 +28,16 @@ class _HomePageState extends State<HomePage> {
 
   final LatLng initialPosition = const LatLng(45.521563, -122.677433);
 
+  final lastPlaceAdd = Rxn<Place>();
+
   void _onMapCreated(GoogleMapController controller) async {
+    Get.defaultDialog(
+      title: "Chargement...",
+      content: CircularProgressIndicator(
+        color: Colors.blue,
+      ),
+      barrierDismissible: false,
+    );
     mapController = controller;
   }
 
@@ -76,10 +86,18 @@ class _HomePageState extends State<HomePage> {
             child: Align(
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
-                onPressed: () => Get.to(CreatePlacePage(
-                  initialPosition:
-                      LatLng(_locationData.latitude!, _locationData.longitude!),
-                )),
+                onPressed: () async {
+                  lastPlaceAdd.value = await Get.to(CreatePlacePage(
+                    initialPosition: LatLng(
+                        _locationData.latitude!, _locationData.longitude!),
+                    user: user,
+                  ));
+                  if (lastPlaceAdd.value != null) {
+                    Get.snackbar("Lieu ajouté avec succès",
+                        "Le lieu a bien été ajouté à la base de donnée.",
+                        backgroundColor: Colors.white);
+                  }
+                },
                 backgroundColor: Color(0xFF527DAA),
                 child: Icon(Icons.add),
               ),
@@ -136,5 +154,7 @@ class _HomePageState extends State<HomePage> {
     mapController.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
         target: LatLng(_locationData.latitude!, _locationData.longitude!),
         zoom: 16.0)));
+
+    Navigator.pop(context);
   }
 }

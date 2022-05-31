@@ -1,5 +1,7 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:la_map/models/response_model.dart';
 import 'package:la_map/models/user_model.dart';
+import 'package:la_map/models/place_model.dart';
 import 'package:http/http.dart' as http;
 
 import 'dart:convert';
@@ -51,6 +53,57 @@ class Network {
 
     try {
       return User.fromJson(apiResponse(response).message);
+    } catch (e) {
+      throw (apiResponse(response).message);
+    }
+  }
+
+  // Create Place
+  Future<Place> createPlace(
+      String name,
+      String userId,
+      String? withWho,
+      String? photo,
+      LatLng coordinates,
+      DateTime date,
+      String visibility,
+      String? note) async {
+    final response = await http.post(
+      Uri.parse(address + "/places"),
+      headers: {
+        apiToken.keys.first: apiToken.values.first,
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode(<String, dynamic>{
+        'name': name,
+        'userId': userId,
+        'withWho': withWho,
+        'photo': photo,
+        'coordinates': {
+          'longitude': coordinates.longitude,
+          'latitude': coordinates.latitude,
+        },
+        'date': date.toIso8601String(),
+        'visibility': visibility,
+        'note': note
+      }),
+    );
+
+    try {
+      return Place.fromJson(apiResponse(response).message);
+    } catch (e) {
+      throw (apiResponse(response).message);
+    }
+  }
+
+  Future<List<Place>> getUserPlaces(String userId) async {
+    final response = await http.get(
+        Uri.parse(
+          address + "/places/$userId",
+        ),
+        headers: apiToken);
+    try {
+      return List<Place>.from(apiResponse(response).message);
     } catch (e) {
       throw (apiResponse(response).message);
     }

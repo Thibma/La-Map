@@ -5,7 +5,6 @@ class User {
   final String idImage;
   final List<dynamic> friends;
   //final DateTime lastConnexion;
-  //final List<Place> places;
 
   const User({
     required this.pseudo,

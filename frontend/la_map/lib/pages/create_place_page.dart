@@ -4,17 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:la_map/models/user_model.dart';
 import 'package:la_map/pages/add_localisation_page.dart';
 import 'package:la_map/utils/constants.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:la_map/services/network.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class CreatePlacePage extends StatefulWidget {
-  CreatePlacePage({Key? key, required LatLng initialPosition})
+  CreatePlacePage(
+      {Key? key, required LatLng initialPosition, required User user})
       : _initialPosition = initialPosition,
+        _user = user,
         super(key: key);
 
   final LatLng _initialPosition;
+  final User _user;
 
   @override
   _CreatePlaceState createState() => _CreatePlaceState();
@@ -26,13 +32,24 @@ class _CreatePlaceState extends State<CreatePlacePage> {
   final noteTextController = TextEditingController();
 
   late LatLng initialPosition;
+  late User user;
 
   final selectedPosition = Rxn<LatLng>();
 
   final _image = Rxn<File>();
   final _picker = ImagePicker();
 
-  DateTime selectedDate = DateTime.now();
+  final selectedDate = Rx<DateTime>(DateTime.now());
+
+  String selectedDropDownValue = "visible";
+
+  List<DropdownMenuItem<String>> get dropdownItems {
+    List<DropdownMenuItem<String>> menuItems = [
+      DropdownMenuItem(child: Text("Visible"), value: "visible"),
+      DropdownMenuItem(child: Text("Invisible"), value: "invisible"),
+    ];
+    return menuItems;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -250,6 +267,102 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                               ),
                             ),
                           ),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: (() => _selectDate(context)),
+                              style: ButtonStyle(
+                                  elevation: MaterialStateProperty.all(5.0),
+                                  padding: MaterialStateProperty.all(
+                                      EdgeInsets.all(15.0)),
+                                  backgroundColor: MaterialStateProperty.all(
+                                      Color(0xFF527DAA)),
+                                  shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(30.0)))),
+                              child: Obx(
+                                () => Text(
+                                  "Date : " +
+                                      selectedDate.value.day.toString() +
+                                      "/" +
+                                      selectedDate.value.month.toString() +
+                                      "/" +
+                                      selectedDate.value.year.toString(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    letterSpacing: 1.5,
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Visibilité *',
+                                style: kLabelStyle,
+                              ),
+                              SizedBox(
+                                height: 5.0,
+                              ),
+                              Container(
+                                alignment: Alignment.center,
+                                decoration: kBoxDecorationStyleLight,
+                                child: DropdownButtonFormField<String>(
+                                  value: selectedDropDownValue,
+                                  items: dropdownItems,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedDropDownValue = value!;
+                                    });
+                                  },
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.only(left: 15.0),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 50.0,
+                          ),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: (() => createPlace()),
+                              style: ButtonStyle(
+                                  elevation: MaterialStateProperty.all(5.0),
+                                  padding: MaterialStateProperty.all(
+                                      EdgeInsets.all(15.0)),
+                                  backgroundColor: MaterialStateProperty.all(
+                                      Color.fromARGB(255, 33, 112, 197)),
+                                  shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(30.0)))),
+                              child: Text(
+                                "Créer le Lieu",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  letterSpacing: 1.5,
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -275,9 +388,73 @@ class _CreatePlaceState extends State<CreatePlacePage> {
     });
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate.value,
+      firstDate: DateTime(1999, 21),
+      lastDate: selectedDate.value,
+      locale: Locale('fr', 'FR'),
+    );
+    if (picked != null) {
+      selectedDate.value = picked;
+    }
+  }
+
+  void createPlace() async {
+    if (nameTextController.text.isEmpty || selectedPosition.value == null) {
+      Get.snackbar("Erreur lors de la création du lieu",
+          "Merci de remplir tous les champs obligatoires.",
+          backgroundColor: Colors.white);
+      return;
+    }
+
+    Get.defaultDialog(
+      title: "Création du lieu...",
+      content: CircularProgressIndicator(
+        color: Colors.blue,
+      ),
+      barrierDismissible: false,
+    );
+
+    final profileStorage = FirebaseStorage.instance.ref().child("place");
+    final userStorage = profileStorage.child(user.idFirebase);
+    final reference = userStorage.child(nameTextController.text +
+        selectedPosition.value!.latitude.toString() +
+        selectedPosition.value!.longitude.toString());
+    String imagePath = "";
+    if (_image.value != null) {
+      reference.putFile(_image.value!);
+      imagePath = reference.fullPath;
+    }
+
+    await Network()
+        .createPlace(
+            nameTextController.text,
+            user.id,
+            withWhoTextController.text,
+            imagePath,
+            selectedPosition.value!,
+            selectedDate.value,
+            selectedDropDownValue,
+            noteTextController.text)
+        .then((place) {
+      Navigator.pop(context);
+      Get.back(result: place);
+    }).onError((error, stackTrace) {
+      Navigator.pop(context);
+      Get.defaultDialog(
+        title: "Erreur de connexion",
+        content: Text("Il y a eu un problème lors de la création d'un lieu"),
+        textConfirm: "OK",
+      );
+    });
+  }
+
   @override
   void initState() {
     initialPosition = widget._initialPosition;
+    user = widget._user;
     super.initState();
   }
 }
