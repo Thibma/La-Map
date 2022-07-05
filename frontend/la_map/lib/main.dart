@@ -21,9 +21,7 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         body: LoginPage(),
       ),
-      localizationsDelegates: [
-        GlobalMaterialLocalizations.delegate,
-      ],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: [
         Locale('fr'),
       ],

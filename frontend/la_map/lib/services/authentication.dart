@@ -14,6 +14,7 @@ class Authentication {
     if (user != null) {
       // SignIn API
       // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage))
+      print(user);
     }
 
     return firebaseApp;

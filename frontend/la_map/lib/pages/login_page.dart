@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:la_map/pages/home_page.dart';
 import 'package:la_map/pages/signup_page.dart';
+import 'package:la_map/pages/widgets/error_dialog.dart';
+import 'package:la_map/pages/widgets/main_button.dart';
 import 'package:la_map/pages/widgets/signup_password.dart';
+import 'package:la_map/pages/widgets/text_field_login.dart';
 import 'package:la_map/services/authentication.dart';
 import 'package:la_map/services/network.dart';
 import 'package:la_map/utils/alerdialog_error.dart';
@@ -22,101 +25,69 @@ class _LoginPageState extends State<LoginPage> {
   final emailTextController = TextEditingController();
   final passwordTextController = TextEditingController();
 
-  Widget _buildEmailTextField() {
+  Widget emailTextField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
           'Email',
-          style: kLabelStyle,
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         SizedBox(
-          height: 10.0,
+          height: 5.0,
         ),
-        Container(
-          alignment: Alignment.centerLeft,
-          decoration: kBoxDecorationStyle,
-          height: 60.0,
-          child: TextField(
-            controller: emailTextController,
-            keyboardType: TextInputType.emailAddress,
-            style: TextStyle(color: Colors.black38),
-            decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.only(top: 14.0),
-                prefixIcon: Icon(Icons.email, color: Colors.black87),
-                hintText: 'Adresse mail',
-                hintStyle: kHintTextStyle),
-          ),
-        ),
+        SizedBox(
+            height: 60.0,
+            child: TextFieldLogin(
+              controller: emailTextController,
+              icon: Icons.mail,
+              hint: "Votre adresse mail",
+            )),
       ],
     );
   }
 
-  Widget _buildPasswordTextField() {
+  Widget passwordTextField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
           'Mot de passe',
-          style: kLabelStyle,
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         SizedBox(
-          height: 10.0,
+          height: 5.0,
         ),
-        Container(
-          alignment: Alignment.centerLeft,
-          decoration: kBoxDecorationStyle,
-          height: 60.0,
-          child: TextField(
-            controller: passwordTextController,
-            obscureText: true,
-            decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.only(top: 14.0),
-                prefixIcon: Icon(Icons.lock, color: Colors.black87),
-                hintText: 'Mot de passe',
-                hintStyle: kHintTextStyle),
-          ),
-        ),
+        SizedBox(
+            height: 60.0,
+            child: TextFieldLogin(
+              controller: passwordTextController,
+              icon: Icons.lock,
+              hint: "Votre mot de passe",
+              obscureText: true,
+            )),
       ],
     );
   }
 
-  Widget _buildConnexionButton() {
+  Widget connexionButton() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 25.0),
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: (() => signInButton()),
-        style: ButtonStyle(
-            elevation: MaterialStateProperty.all(5.0),
-            padding: MaterialStateProperty.all(EdgeInsets.all(15.0)),
-            backgroundColor: MaterialStateProperty.all(Color(0xFF527DAA)),
-            shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.0)))),
-        child: Text(
-          'CONNEXION',
-          style: TextStyle(
-            color: Colors.white,
-            letterSpacing: 1.5,
-            fontSize: 18.0,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
+        padding: EdgeInsets.symmetric(vertical: 25.0),
+        width: double.infinity,
+        child: MainElevatedButton(
+          onPressed: signInButton,
+          textButton: "Se connecter",
+        ));
   }
 
-  Widget _buildGoogleConnexionButton() {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 0),
+  Widget googleConnexionButton() {
+    return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         icon: Image.asset(
           'assets/logos/google.png',
-          width: 30,
-          height: 30,
+          width: 25,
+          height: 25,
         ),
         onPressed: (() async {
           await Authentication.signInWithGogle(context: context)
@@ -151,9 +122,9 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildSignupTextView() {
+  Widget signupTextView() {
     return GestureDetector(
-      onTap: (() => signUpDialog(context)),
+      onTap: (() => Get.dialog(SignUpDialog())),
       child: RichText(
         text: TextSpan(
           children: [
@@ -181,66 +152,60 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget home() {
     return Scaffold(
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light,
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: Stack(
-            children: <Widget>[
-              Container(
-                height: double.infinity,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFF74EBD5),
-                      Color(0xFFACB6E5),
-                    ],
-                    stops: [0.3, 0.9],
-                  ),
+      resizeToAvoidBottomInset: true,
+      body: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Stack(
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF56CCF2),
+                    Color(0xFF2F80ED),
+                  ],
+                  stops: [0.4, 0.9],
                 ),
               ),
-              SizedBox(
-                height: double.infinity,
-                child: SingleChildScrollView(
-                  physics: AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 40.0,
-                    vertical: 80.0,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        'La MAP !',
+            ),
+            SizedBox(
+              height: double.infinity,
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 40.0,
+                  vertical: 80.0,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text('La MAP !',
                         style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 30.0,
+                          color: primaryColor,
+                          fontSize: 50.0,
                           fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(
-                        height: 30.0,
-                      ),
-                      _buildEmailTextField(),
-                      SizedBox(
-                        height: 30.0,
-                      ),
-                      _buildPasswordTextField(),
-                      _buildConnexionButton(),
-                      _buildGoogleConnexionButton(),
-                      SizedBox(
-                        height: 30.0,
-                      ),
-                      _buildSignupTextView(),
-                    ],
-                  ),
+                        )),
+                    SizedBox(
+                      height: 30.0,
+                    ),
+                    emailTextField(),
+                    SizedBox(
+                      height: 30.0,
+                    ),
+                    passwordTextField(),
+                    connexionButton(),
+                    googleConnexionButton(),
+                    SizedBox(
+                      height: 30.0,
+                    ),
+                    signupTextView(),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -278,18 +243,16 @@ class _LoginPageState extends State<LoginPage> {
   void signInButton() {
     if (emailTextController.text.isEmpty ||
         passwordTextController.text.isEmpty) {
-      Get.snackbar(
-        "Erreur de connexion",
-        "Merci de remplir tous les champs",
-        backgroundColor: Colors.white,
-      );
+      Get.dialog(ErrorDialog(
+          titleError: "Erreur de connexion",
+          contentError: "Merci de remplir tous les champs"));
       return;
     }
 
     Get.defaultDialog(
       title: "Connexion",
       content: CircularProgressIndicator(
-        color: Colors.blue,
+        color: primaryColor,
       ),
       barrierDismissible: false,
     );

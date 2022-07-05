@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
+Color primaryColor = Color(0xFf1a237e);
+Color lightColor = Color(0x9ffc4dcc);
+Color darkColor = Color(0xff38006b);
+
 const kLabelStyle =
     TextStyle(color: Colors.black45, fontWeight: FontWeight.bold);
 
 final kBoxDecorationStyle = BoxDecoration(
-  color: const Color.fromARGB(188, 62, 162, 144),
+  color: Color.fromARGB(79, 138, 138, 138),
   borderRadius: BorderRadius.circular(10.0),
   boxShadow: const [
     BoxShadow(
@@ -28,7 +32,7 @@ final kBoxDecorationStyleTranspa = BoxDecoration(
 );
 
 final kBoxDecorationStyleDown = BoxDecoration(
-  color: Color.fromARGB(187, 62, 137, 162),
+  color: Color.fromARGB(186, 170, 170, 170),
   borderRadius: BorderRadius.circular(10.0),
   boxShadow: const [
     BoxShadow(
