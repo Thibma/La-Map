@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:la_map/pages/home_page.dart';
 import 'package:la_map/pages/signup_page.dart';
-import 'package:la_map/pages/widgets/error_dialog.dart';
+import 'package:la_map/pages/widgets/ok_dialog.dart';
 import 'package:la_map/pages/widgets/main_button.dart';
 import 'package:la_map/pages/widgets/signup_password.dart';
 import 'package:la_map/pages/widgets/text_field_login.dart';
@@ -89,19 +89,7 @@ class _LoginPageState extends State<LoginPage> {
           width: 25,
           height: 25,
         ),
-        onPressed: (() async {
-          await Authentication.signInWithGogle(context: context)
-              .then((user) => Network()
-                  .login(user!.uid)
-                  .then((user) => Get.offAll(HomePage(
-                        user: user,
-                      )))
-                  .onError((error, stackTrace) =>
-                      Get.to(() => SignUpPage(uid: user.uid))))
-              .onError((error, stackTrace) {
-            errorDialog(context, error.toString());
-          });
-        }),
+        onPressed: signInGoogle,
         style: ButtonStyle(
             elevation: MaterialStateProperty.all(5.0),
             padding: MaterialStateProperty.all(EdgeInsets.all(15.0)),
@@ -152,12 +140,15 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget home() {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       body: GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: Stack(
-          children: <Widget>[
+          alignment: Alignment.center,
+          children: [
             Container(
+              height: double.infinity,
+              width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -173,7 +164,6 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(
               height: double.infinity,
               child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.symmetric(
                   horizontal: 40.0,
                   vertical: 80.0,
@@ -240,37 +230,70 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void signInButton() {
-    if (emailTextController.text.isEmpty ||
-        passwordTextController.text.isEmpty) {
-      Get.dialog(ErrorDialog(
-          titleError: "Erreur de connexion",
-          contentError: "Merci de remplir tous les champs"));
-      return;
+  void signInButton() async {
+    try {
+      if (emailTextController.text.isEmpty ||
+          passwordTextController.text.isEmpty) {
+        throw ("Merci de remplir tous les champs");
+      }
+
+      Get.defaultDialog(
+        title: "Connexion",
+        content: CircularProgressIndicator(
+          color: primaryColor,
+        ),
+        barrierDismissible: false,
+      );
+
+      final firebaseUser = await Authentication.signInWithEmailPassword(
+          emailTextController.text, passwordTextController.text);
+      login(firebaseUser.uid);
+    } catch (e) {
+      Get.back();
+      Get.dialog(OkDialog(
+          titleError: "Erreur lors de la connexion",
+          contentError: e.toString()));
     }
+  }
 
-    Get.defaultDialog(
-      title: "Connexion",
-      content: CircularProgressIndicator(
-        color: primaryColor,
-      ),
-      barrierDismissible: false,
-    );
+  void signInGoogle() async {
+    try {
+      Get.defaultDialog(
+        title: "Connexion",
+        content: CircularProgressIndicator(
+          color: primaryColor,
+        ),
+        barrierDismissible: false,
+      );
 
-    Authentication.signInWithEmailPassword(
-            emailTextController.text, passwordTextController.text)
-        .then((firebaseUser) async {
-      await Network().login(firebaseUser!.uid).then((user) {
-        Get.offAll(HomePage(
-          user: user,
-        ));
-      }).onError(
-          (error, stackTrace) => Get.to(SignUpPage(uid: firebaseUser.uid)));
-    }).onError((error, stackTrace) {
-      Navigator.pop(context);
-      Get.snackbar("Erreur lors de la connexion",
-          "L'adresse mail et/ou le mot de passe sont incorrects.",
-          backgroundColor: Colors.white);
-    });
+      final firebaseUser =
+          await Authentication.signInWithGogle(context: context);
+      login(firebaseUser.uid);
+    } catch (e) {
+      Get.back();
+      if (e == "Annulé") {
+        return;
+      }
+    }
+  }
+
+  void login(String firebaseId) async {
+    try {
+      final apiUser = await Network().login(firebaseId);
+      Get.back();
+      Get.offAll(HomePage(
+        user: apiUser,
+      ));
+    } catch (e) {
+      if (e != firebaseId) {
+        Get.back();
+        Get.dialog(OkDialog(
+            titleError: "Erreur lors de la connexion",
+            contentError: "Impossible de se connecter au serveur."));
+        return;
+      }
+      Get.back();
+      Get.to(SignUpPage(uid: firebaseId));
+    }
   }
 }

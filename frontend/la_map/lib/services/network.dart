@@ -25,6 +25,8 @@ class Network {
       }
 
       return responseModel;
+    } else if (response.statusCode == 404) {
+      throw (404);
     } else {
       throw (response.body);
     }
@@ -38,6 +40,9 @@ class Network {
     try {
       return User.fromJson(apiResponse(response).message);
     } catch (e) {
+      if (response.statusCode == 404) {
+        throw (404);
+      }
       throw (apiResponse(response).message);
     }
   }

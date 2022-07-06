@@ -37,7 +37,7 @@ export class UserService {
         try {
             let user = await this.getModel().findOne({ 'idFirebase': idFirebase }) as IUserDocument;
             if (!user) {
-                throw new Error('User not found : Signup');
+                throw new Error(idFirebase);
             }
 
             result = new BodyDocument<IUserDocument>(user);

@@ -2,10 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>La Map a besoin d&apos;avoir accès à la bibliothèque photo.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>La Map a brsoin de savoir votre localisation</string>
+	<string>La Map a besoin de savoir votre localisation.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>La Map a besoin de savoir votre localisation</string>
+	<string>La Map a besoin de savoir votre localisation.</string>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>CFBundleDevelopmentRegion</key>

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:la_map/pages/home_page.dart';
+import 'package:la_map/pages/widgets/main_button.dart';
+import 'package:la_map/pages/widgets/text_field_login.dart';
 import 'package:la_map/services/network.dart';
 import 'package:la_map/utils/alerdialog_error.dart';
 import 'package:la_map/utils/constants.dart';
@@ -29,74 +31,74 @@ class _SignupPageState extends State<SignUpPage> {
   final _picker = ImagePicker();
   final textController = TextEditingController();
 
-  Future<void> _openImagePicker() async {
-    await _picker.pickImage(source: ImageSource.gallery).then((photo) async {
-      await ImageCropper().cropImage(
-          sourcePath: photo!.path,
-          aspectRatioPresets: [
-            CropAspectRatioPreset.square
-          ]).then((croppedPhoto) {
-        _image.value = File(croppedPhoto!.path);
-      });
-    });
+  Future<void> openImagePicker() async {
+    try {
+      final file = await _picker.pickImage(source: ImageSource.gallery);
+      final croppedFile = await ImageCropper().cropImage(
+          sourcePath: file!.path,
+          aspectRatioPresets: [CropAspectRatioPreset.square]);
+      _image.value = File(croppedFile!.path);
+    } catch (e) {
+      //
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light,
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                height: double.infinity,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFF74EBD5),
-                      Color(0xFFACB6E5),
-                    ],
-                    stops: [0.3, 0.9],
-                  ),
+      resizeToAvoidBottomInset: true,
+      body: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              height: double.infinity,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF56CCF2),
+                    Color(0xFF2F80ED),
+                  ],
+                  stops: [0.4, 0.9],
                 ),
               ),
-              SizedBox(
-                height: double.infinity,
-                child: SingleChildScrollView(
-                  physics: AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 40.0,
-                    vertical: 80.0,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Inscription !",
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 30.0,
-                          fontWeight: FontWeight.bold,
-                        ),
+            ),
+            SizedBox(
+              height: double.infinity,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 40.0,
+                  vertical: 60.0,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "C'est presque fini !",
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontSize: 40.0,
+                        fontWeight: FontWeight.bold,
                       ),
-                      SizedBox(
-                        height: 20.0,
-                      ),
-                      Text(
-                        "Choisissez une photo de profil et un pseudo pour finaliser l'inscription.",
-                        style: kLabelStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(
-                        height: 30.0,
-                      ),
-                      Obx(
+                    ),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    Text(
+                      "Choisissez une photo de profil et un pseudo pour finaliser l'inscription.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 15),
+                    ),
+                    SizedBox(
+                      height: 20.0,
+                    ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: Obx(
                         () => _image.value != null
                             ? Image.file(
                                 _image.value!,
@@ -109,90 +111,40 @@ class _SignupPageState extends State<SignUpPage> {
                                 height: 250.0,
                               ),
                       ),
-                      SizedBox(
-                        height: 20.0,
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: (() => _openImagePicker()),
-                          style: ButtonStyle(
-                              elevation: MaterialStateProperty.all(5.0),
-                              padding: MaterialStateProperty.all(
-                                  EdgeInsets.all(15.0)),
-                              backgroundColor: MaterialStateProperty.all(
-                                  Color.fromARGB(255, 60, 97, 137)),
-                              shape: MaterialStateProperty.all(
-                                  RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(30.0)))),
-                          child: Text(
-                            'Ajouter une photo',
-                            style: TextStyle(
-                              color: Colors.white,
-                              letterSpacing: 1.5,
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 30.0,
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        decoration: kBoxDecorationStyleDown,
-                        height: 60.0,
-                        child: TextField(
-                          controller: textController,
-                          keyboardType: TextInputType.name,
-                          style: TextStyle(color: Colors.black38),
-                          decoration: InputDecoration(
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.only(top: 14.0),
-                              prefixIcon:
-                                  Icon(Icons.person, color: Colors.black87),
-                              hintText: 'Pseudo',
-                              hintStyle: kHintTextStyle),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 40.0,
-                    vertical: 30.0,
-                  ),
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: (() => signUp()),
-                    style: ButtonStyle(
-                        elevation: MaterialStateProperty.all(5.0),
-                        padding:
-                            MaterialStateProperty.all(EdgeInsets.all(15.0)),
-                        backgroundColor:
-                            MaterialStateProperty.all(Color(0xFF527DAA)),
-                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0)))),
-                    child: Text(
-                      'INSCRIPTION !',
-                      style: TextStyle(
-                        color: Colors.white,
-                        letterSpacing: 1.5,
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
+                    ),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: MainElevatedButton(
+                        onPressed: openImagePicker,
+                        textButton: "Ajouter une photo",
+                        isMainButton: false,
                       ),
                     ),
-                  ),
+                    SizedBox(
+                      height: 20.0,
+                    ),
+                    TextFieldLogin(
+                        hint: "Votre pseudo",
+                        icon: Icons.person,
+                        controller: textController),
+                    SizedBox(
+                      height: 60,
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: MainElevatedButton(
+                        onPressed: signUp,
+                        textButton: "Inscription !",
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

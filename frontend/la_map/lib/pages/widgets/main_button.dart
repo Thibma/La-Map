@@ -4,11 +4,15 @@ import '../../utils/constants.dart';
 
 class MainElevatedButton extends StatelessWidget {
   const MainElevatedButton(
-      {Key? key, required this.onPressed, required this.textButton})
+      {Key? key,
+      required this.onPressed,
+      required this.textButton,
+      this.isMainButton = true})
       : super(key: key);
 
   final Function() onPressed;
   final String textButton;
+  final bool isMainButton;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +21,8 @@ class MainElevatedButton extends StatelessWidget {
       style: ButtonStyle(
           elevation: MaterialStateProperty.all(5.0),
           padding: MaterialStateProperty.all(EdgeInsets.all(15.0)),
-          backgroundColor: MaterialStateProperty.all(primaryColor),
+          backgroundColor: MaterialStateProperty.all(
+              isMainButton ? primaryColor : lightColor),
           shape: MaterialStateProperty.all(RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30.0)))),
       child: Text(

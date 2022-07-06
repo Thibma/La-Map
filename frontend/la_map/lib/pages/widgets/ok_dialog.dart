@@ -4,8 +4,8 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:la_map/utils/constants.dart';
 
-class ErrorDialog extends StatelessWidget {
-  ErrorDialog({
+class OkDialog extends StatelessWidget {
+  OkDialog({
     Key? key,
     required this.titleError,
     required this.contentError,

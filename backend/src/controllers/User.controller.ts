@@ -25,6 +25,10 @@ export class UserController {
         const { idFirebase } = request.params;
 
         const updated = await this.service.firebaseSignIn(idFirebase);
+        if (updated.message == 'User not found : Signup') {
+            response.status(404).send(updated);
+            return;
+        }
         const status = updated.error ? 400 : 202;
         response.status(status).send(updated);
     }

@@ -20,15 +20,18 @@ class Authentication {
     return firebaseApp;
   }
 
-  static Future<User?> signInWithGogle({required BuildContext context}) async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-    User? user;
+  static Future<User> signInWithGogle({required BuildContext context}) async {
+    try {
+      FirebaseAuth auth = FirebaseAuth.instance;
 
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-    final GoogleSignInAccount? googleSignInAccount =
-        await googleSignIn.signIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleSignInAccount =
+          await googleSignIn.signIn();
 
-    if (googleSignInAccount != null) {
+      if (googleSignInAccount == null) {
+        throw ("Annulé");
+      }
+
       final GoogleSignInAuthentication googleSignInAuthentication =
           await googleSignInAccount.authentication;
 
@@ -41,52 +44,62 @@ class Authentication {
         final UserCredential userCredential =
             await auth.signInWithCredential(credential);
 
-        user = userCredential.user;
+        if (userCredential.user == null) {
+          throw ("Une erreur de connexion avec le serveur a eu lieu");
+        }
+        return userCredential.user!;
       } on FirebaseAuthException catch (e) {
-        print(e);
+        if (e.code == "account-exists-with-different-credential") {
+          throw ("Ce compte existe déjà avec un autre système d'identification.");
+        } else if (e.code == "user-disabled") {
+          throw ("L'utilisateur a été désactivé.");
+        } else {
+          throw ("Une erreur de connexion a eu lieu.");
+        }
       }
-    }
-    return user;
-  }
-
-  static void signUpWithEmailAndPassword(
-      String email, String password, BuildContext context) async {
-    try {
-      await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password)
-          .then((value) {
-        Navigator.pop(context);
-        Get.snackbar(
-            "Inscription complétée", "Vous pouvez désormais vous connecter.",
-            backgroundColor: Colors.white);
-        return;
-      });
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        Get.snackbar("Erreur lors de l'inscription", "Mot de passe trop faible",
-            backgroundColor: Colors.white);
-      } else if (e.code == 'email-already-in-use') {
-        Get.snackbar("Erreur lors de l'inscription",
-            "Un compte existe déjà avec cette adresse mail.",
-            backgroundColor: Colors.white);
-      } else {
-        Get.snackbar("Erreur lors de l'inscription",
-            "Une erreur a eu lieu lors de l'inscripton.",
-            backgroundColor: Colors.white);
-      }
-    }
-  }
-
-  static Future<User?> signInWithEmailPassword(
-      String email, String password) async {
-    User? user;
-    try {
-      final userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-      user = userCredential.user;
     } catch (e) {
       rethrow;
     }
-    return user;
+  }
+
+  static Future<void> signUpWithEmailAndPassword(
+      String email, String password, BuildContext context) async {
+    try {
+      await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      return;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        throw ("Mot de passe trop faible");
+      } else if (e.code == 'email-already-in-use') {
+        throw ("Un compte existe déjà avec cette adresse mail.");
+      } else if (e.code == 'invalid-email') {
+        throw ("Votre adresse mail n'est pas valide");
+      } else {
+        throw ("Une erreur de connexion a eu lieu lors de l'inscription");
+      }
+    }
+  }
+
+  static Future<User> signInWithEmailPassword(
+      String email, String password) async {
+    try {
+      final userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+      User user = userCredential.user!;
+      return user;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == "invalid-email") {
+        throw ("L'adresse mail n'est pas valide.");
+      } else if (e.code == "user-disabled") {
+        throw ("L'utilisateur a été désactivé.");
+      } else if (e.code == "user-not-found") {
+        throw ("Le compte lié a cette adresse mail n'existe pas.");
+      } else if (e.code == "wrong-password") {
+        throw ("Le mot de passe est incorrect.");
+      } else {
+        throw ("Une erreur de connexion a eu lieu.");
+      }
+    }
   }
 }
