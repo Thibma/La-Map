@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:la_map/pages/home_page.dart';
 import 'package:la_map/pages/signup_page.dart';
 import 'package:la_map/pages/widgets/ok_dialog.dart';
@@ -10,7 +9,6 @@ import 'package:la_map/pages/widgets/signup_password.dart';
 import 'package:la_map/pages/widgets/text_field_login.dart';
 import 'package:la_map/services/authentication.dart';
 import 'package:la_map/services/network.dart';
-import 'package:la_map/utils/alerdialog_error.dart';
 import 'package:la_map/utils/constants.dart';
 import 'package:get/get.dart';
 
@@ -259,7 +257,7 @@ class _LoginPageState extends State<LoginPage> {
   void signInGoogle() async {
     try {
       Get.defaultDialog(
-        title: "Connexion",
+        title: "Connexion...",
         content: CircularProgressIndicator(
           color: primaryColor,
         ),
@@ -281,9 +279,9 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final apiUser = await Network().login(firebaseId);
       Get.back();
-      Get.offAll(HomePage(
-        user: apiUser,
-      ));
+      Get.offAll(() => HomePage(
+            user: apiUser,
+          ));
     } catch (e) {
       if (e != firebaseId) {
         Get.back();
@@ -293,7 +291,7 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
       Get.back();
-      Get.to(SignUpPage(uid: firebaseId));
+      Get.to(() => SignUpPage(firebaseId: firebaseId));
     }
   }
 }

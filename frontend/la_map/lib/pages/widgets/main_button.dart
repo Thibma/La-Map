@@ -19,7 +19,6 @@ class MainElevatedButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ButtonStyle(
-          elevation: MaterialStateProperty.all(5.0),
           padding: MaterialStateProperty.all(EdgeInsets.all(15.0)),
           backgroundColor: MaterialStateProperty.all(
               isMainButton ? primaryColor : lightColor),

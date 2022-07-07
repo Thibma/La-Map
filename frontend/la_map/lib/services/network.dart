@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 
 import 'dart:convert';
 
+import '../models/google_places_model.dart';
+
 class Network {
   // Malakoff
   //final String address = "http://192.168.1.143:8000";
@@ -33,12 +35,12 @@ class Network {
   }
 
   // SignIn
-  Future<User> login(String uid) async {
+  Future<ApiUser> login(String uid) async {
     final response = await http.get(Uri.parse(address + "/users/signin/$uid"),
         headers: apiToken);
 
     try {
-      return User.fromJson(apiResponse(response).message);
+      return ApiUser.fromJson(apiResponse(response).message);
     } catch (e) {
       if (response.statusCode == 404) {
         throw (404);
@@ -48,7 +50,7 @@ class Network {
   }
 
   // SignUp
-  Future<User> signUp(String pseudo, String uid, String imageUrl) async {
+  Future<ApiUser> signUp(String pseudo, String uid, String imageUrl) async {
     final response = await http.post(
       Uri.parse(address + "/users"),
       headers: {
@@ -59,7 +61,7 @@ class Network {
     );
 
     try {
-      return User.fromJson(apiResponse(response).message);
+      return ApiUser.fromJson(apiResponse(response).message);
     } catch (e) {
       throw (apiResponse(response).message);
     }
@@ -113,6 +115,39 @@ class Network {
       return List<Place>.from(apiResponse(response).message);
     } catch (e) {
       throw (apiResponse(response).message);
+    }
+  }
+
+  Future<List<Suggestion>> getAutocompletePlaces(
+      String input, String sessionToken) async {
+    if (input == "") {
+      return [];
+    }
+    try {
+      final response = await http.get(
+          Uri.parse(
+              "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&types=address&language=fr&key=AIzaSyCC12LH2apk-C8_bVFdD8AQvAlM1ZepAg0&sessiontoken=sessionToken"),
+          headers: apiToken);
+
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        if (result['status'] == 'OK') {
+          final googleResponse = GoogleMapsResponsePrediction.fromJson(result);
+          List<Suggestion> suggestions = [];
+          for (var element in googleResponse.predictions) {
+            suggestions
+                .add(Suggestion(element["place_id"], element["description"]));
+          }
+          return suggestions;
+        }
+        if (result['status'] == 'ZERO_RESULTS') {
+          return [];
+        }
+      }
+
+      throw Exception('Failed to fetch suggestion');
+    } catch (e) {
+      rethrow;
     }
   }
 }

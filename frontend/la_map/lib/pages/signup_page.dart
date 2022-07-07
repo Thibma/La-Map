@@ -1,45 +1,56 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:la_map/pages/home_page.dart';
 import 'package:la_map/pages/widgets/main_button.dart';
+import 'package:la_map/pages/widgets/ok_dialog.dart';
 import 'package:la_map/pages/widgets/text_field_login.dart';
 import 'package:la_map/services/network.dart';
-import 'package:la_map/utils/alerdialog_error.dart';
 import 'package:la_map/utils/constants.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:get/get.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-class SignUpPage extends StatefulWidget {
-  SignUpPage({Key? key, required String uid})
-      : _uid = uid,
-        super(key: key);
+import '../models/user_model.dart';
 
-  final String _uid;
+class SignUpPage extends StatefulWidget {
+  SignUpPage({Key? key, required this.firebaseId}) : super(key: key);
+
+  final String firebaseId;
 
   @override
   _SignupPageState createState() => _SignupPageState();
 }
 
 class _SignupPageState extends State<SignUpPage> {
-  late String _uid;
+  late String firebaseId;
 
   final _image = Rxn<File>();
   final _picker = ImagePicker();
   final textController = TextEditingController();
+
+  @override
+  void initState() {
+    firebaseId = widget.firebaseId;
+
+    super.initState();
+  }
 
   Future<void> openImagePicker() async {
     try {
       final file = await _picker.pickImage(source: ImageSource.gallery);
       final croppedFile = await ImageCropper().cropImage(
           sourcePath: file!.path,
-          aspectRatioPresets: [CropAspectRatioPreset.square]);
+          aspectRatioPresets: [CropAspectRatioPreset.square],
+          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+          uiSettings: [
+            IOSUiSettings(
+                doneButtonTitle: "Confirmer", cancelButtonTitle: "Annuler")
+          ]);
       _image.value = File(croppedFile!.path);
     } catch (e) {
-      //
+      // Annulé
     }
   }
 
@@ -150,50 +161,33 @@ class _SignupPageState extends State<SignUpPage> {
     );
   }
 
-  void signUp() {
-    if (textController.text.isEmpty || _image.value == null) {
-      errorDialog(context, "Merci de remplir tous les champs.");
-      return;
+  void signUp() async {
+    try {
+      Get.defaultDialog(
+        title: "Inscription...",
+        content: CircularProgressIndicator(
+          color: Colors.blue,
+        ),
+        barrierDismissible: false,
+      );
+
+      if (textController.text.isEmpty || _image.value == null) {
+        throw ("Merci de remplir tous les champs et de sélectionner une image.");
+      }
+
+      final profileStorage =
+          FirebaseStorage.instance.ref().child("profilePictures");
+      final reference = profileStorage.child(firebaseId);
+      await reference.putFile(_image.value!);
+      ApiUser user = await Network()
+          .signUp(textController.text, firebaseId, reference.fullPath);
+      Get.back();
+      Get.offAll(HomePage(user: user));
+    } catch (e) {
+      Get.back();
+      Get.dialog(OkDialog(
+          titleError: "Erreur lors de l'inscription",
+          contentError: e.toString()));
     }
-
-    Get.defaultDialog(
-      title: "Connexion",
-      content: CircularProgressIndicator(
-        color: Colors.blue,
-      ),
-      barrierDismissible: false,
-    );
-
-    final profileStorage =
-        FirebaseStorage.instance.ref().child("profilePictures");
-    final reference = profileStorage.child(_uid);
-    reference.putFile(_image.value!).then((p0) {
-      Network()
-          .signUp(textController.text, _uid, reference.fullPath)
-          .then((user) {
-        Navigator.pop(context);
-        Get.offAll(HomePage(user: user));
-      }).onError((error, stackTrace) {
-        Navigator.pop(context);
-        Get.defaultDialog(
-          title: "Erreur de connexion",
-          content: Text("Il y a eu un problème lors de l'inscription."),
-          textConfirm: "OK",
-        );
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    textController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    _uid = widget._uid;
-
-    super.initState();
   }
 }

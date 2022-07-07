@@ -6,6 +6,9 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:la_map/models/user_model.dart';
 import 'package:la_map/pages/add_localisation_page.dart';
+import 'package:la_map/pages/widgets/main_button.dart';
+import 'package:la_map/pages/widgets/ok_dialog.dart';
+import 'package:la_map/pages/widgets/text_field.dart';
 import 'package:la_map/utils/constants.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -13,14 +16,11 @@ import 'package:la_map/services/network.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class CreatePlacePage extends StatefulWidget {
-  CreatePlacePage(
-      {Key? key, required LatLng initialPosition, required User user})
-      : _initialPosition = initialPosition,
-        _user = user,
-        super(key: key);
+  CreatePlacePage({Key? key, required this.initialPosition, required this.user})
+      : super(key: key);
 
-  final LatLng _initialPosition;
-  final User _user;
+  final LatLng initialPosition;
+  final ApiUser user;
 
   @override
   _CreatePlaceState createState() => _CreatePlaceState();
@@ -32,7 +32,7 @@ class _CreatePlaceState extends State<CreatePlacePage> {
   final noteTextController = TextEditingController();
 
   late LatLng initialPosition;
-  late User user;
+  late ApiUser user;
 
   final selectedPosition = Rxn<LatLng>();
 
@@ -51,6 +51,12 @@ class _CreatePlaceState extends State<CreatePlacePage> {
     return menuItems;
   }
 
+  void addLocation() async {
+    selectedPosition.value = await Get.to(
+        () => AddLocalisationPage(initialPosition: initialPosition));
+    print(selectedPosition);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,7 +65,7 @@ class _CreatePlaceState extends State<CreatePlacePage> {
           "Création d'un Lieu",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Color(0xFF527DAA),
+        backgroundColor: primaryColor,
       ),
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
@@ -76,10 +82,10 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xFF74EBD5),
-                      Color(0xFFACB6E5),
+                      Color(0xFF56CCF2),
+                      Color(0xFF2F80ED),
                     ],
-                    stops: [0.3, 0.9],
+                    stops: [0.4, 0.9],
                   ),
                 ),
               ),
@@ -99,25 +105,18 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                         children: [
                           Text(
                             'Nom du lieu *',
-                            style: kLabelStyle,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           SizedBox(
                             height: 5.0,
                           ),
-                          Container(
-                            alignment: Alignment.centerLeft,
-                            decoration: kBoxDecorationStyleLight,
+                          SizedBox(
                             height: 60.0,
-                            child: TextField(
-                              controller: nameTextController,
-                              keyboardType: TextInputType.name,
-                              style: TextStyle(color: Colors.black87),
-                              decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.only(left: 15.0),
-                                  hintText: 'Nom',
-                                  hintStyle: kHintTextStyle),
-                            ),
+                            child: TextFieldWidget(
+                                controller: nameTextController, hint: "Nom"),
                           ),
                         ],
                       ),
@@ -129,24 +128,19 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                         children: [
                           Text(
                             'Avec qui ?',
-                            style: kLabelStyle,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           SizedBox(
                             height: 5.0,
                           ),
-                          Container(
-                            alignment: Alignment.centerLeft,
-                            decoration: kBoxDecorationStyleLight,
+                          SizedBox(
                             height: 60.0,
-                            child: TextField(
+                            child: TextFieldWidget(
                               controller: withWhoTextController,
-                              keyboardType: TextInputType.name,
-                              style: TextStyle(color: Colors.black87),
-                              decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.only(left: 15.0),
-                                  hintText: 'Avec qui ?',
-                                  hintStyle: kHintTextStyle),
+                              hint: "Avec qui ?",
                             ),
                           ),
                         ],
@@ -159,25 +153,19 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                         children: [
                           Text(
                             'Notes',
-                            style: kLabelStyle,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           SizedBox(
                             height: 5.0,
                           ),
                           Container(
-                            alignment: Alignment.centerLeft,
-                            decoration: kBoxDecorationStyleLight,
-                            height: 120.0,
-                            child: TextField(
+                            constraints: BoxConstraints(maxHeight: 200),
+                            child: TextFieldMultiline(
                               controller: noteTextController,
-                              keyboardType: TextInputType.multiline,
-                              maxLines: null,
-                              style: TextStyle(color: Colors.black87),
-                              decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.only(left: 15.0),
-                                  hintText: 'Raconte tout !',
-                                  hintStyle: kHintTextStyle),
+                              hint: "Raconte tout !",
                             ),
                           ),
                           SizedBox(
@@ -185,36 +173,16 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                           ),
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: (() async {
-                                selectedPosition.value = await Get.to(
-                                    AddLocalisationPage(
-                                        initialPosition: initialPosition));
-                                print(selectedPosition);
-                              }),
-                              style: ButtonStyle(
-                                  elevation: MaterialStateProperty.all(5.0),
-                                  padding: MaterialStateProperty.all(
-                                      EdgeInsets.all(15.0)),
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Color(0xFF527DAA)),
-                                  shape: MaterialStateProperty.all(
-                                      RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30.0)))),
-                              child: Obx(
-                                () => Text(
-                                  selectedPosition.value == null
-                                      ? 'Ajouter une localisation *'
-                                      : "Localisation ajoutée",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    letterSpacing: 1.5,
-                                    fontSize: 18.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
+                            child: Obx(
+                              () => selectedPosition.value == null
+                                  ? MainElevatedButton(
+                                      onPressed: addLocation,
+                                      isMainButton: false,
+                                      textButton: 'Ajouter une localisation *')
+                                  : MainElevatedButton(
+                                      onPressed: addLocation,
+                                      isMainButton: false,
+                                      textButton: 'Localisation ajoutée'),
                             ),
                           ),
                           SizedBox(
@@ -222,27 +190,10 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                           ),
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: (() => _openImagePicker()),
-                              style: ButtonStyle(
-                                  elevation: MaterialStateProperty.all(5.0),
-                                  padding: MaterialStateProperty.all(
-                                      EdgeInsets.all(15.0)),
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Color(0xFF527DAA)),
-                                  shape: MaterialStateProperty.all(
-                                      RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30.0)))),
-                              child: Text(
-                                "Ajouter une photo",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  letterSpacing: 1.5,
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                            child: MainElevatedButton(
+                              onPressed: openImagePicker,
+                              isMainButton: false,
+                              textButton: "Ajouter une photo",
                             ),
                           ),
                           SizedBox(
@@ -272,33 +223,16 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                           ),
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: (() => _selectDate(context)),
-                              style: ButtonStyle(
-                                  elevation: MaterialStateProperty.all(5.0),
-                                  padding: MaterialStateProperty.all(
-                                      EdgeInsets.all(15.0)),
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Color(0xFF527DAA)),
-                                  shape: MaterialStateProperty.all(
-                                      RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30.0)))),
-                              child: Obx(
-                                () => Text(
-                                  "Date : " +
-                                      selectedDate.value.day.toString() +
-                                      "/" +
-                                      selectedDate.value.month.toString() +
-                                      "/" +
-                                      selectedDate.value.year.toString(),
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    letterSpacing: 1.5,
-                                    fontSize: 18.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                            child: Obx(
+                              () => MainElevatedButton(
+                                onPressed: () => selectDate(context),
+                                isMainButton: false,
+                                textButton: "Date : " +
+                                    selectedDate.value.day.toString() +
+                                    "/" +
+                                    selectedDate.value.month.toString() +
+                                    "/" +
+                                    selectedDate.value.year.toString(),
                               ),
                             ),
                           ),
@@ -310,26 +244,40 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                             children: [
                               Text(
                                 'Visibilité *',
-                                style: kLabelStyle,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               SizedBox(
                                 height: 5.0,
                               ),
                               Container(
                                 alignment: Alignment.center,
-                                decoration: kBoxDecorationStyleLight,
-                                child: DropdownButtonFormField<String>(
+                                child: DropdownButtonFormField(
                                   value: selectedDropDownValue,
                                   items: dropdownItems,
                                   onChanged: (value) {
                                     setState(() {
-                                      selectedDropDownValue = value!;
+                                      selectedDropDownValue = value as String;
                                     });
                                   },
                                   isExpanded: true,
                                   decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.only(left: 15.0),
+                                    hintText: "Visibilité *",
+                                    filled: true,
+                                    labelStyle: const TextStyle(fontSize: 12),
+                                    fillColor: Colors.black12,
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                      borderSide:
+                                          BorderSide(color: Colors.transparent),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide:
+                                          BorderSide(color: Colors.transparent),
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -340,27 +288,9 @@ class _CreatePlaceState extends State<CreatePlacePage> {
                           ),
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(
+                            child: MainElevatedButton(
                               onPressed: (() => createPlace()),
-                              style: ButtonStyle(
-                                  elevation: MaterialStateProperty.all(5.0),
-                                  padding: MaterialStateProperty.all(
-                                      EdgeInsets.all(15.0)),
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Color.fromARGB(255, 33, 112, 197)),
-                                  shape: MaterialStateProperty.all(
-                                      RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30.0)))),
-                              child: Text(
-                                "Créer le Lieu",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  letterSpacing: 1.5,
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              textButton: "Créer le lieu",
                             ),
                           ),
                         ],
@@ -376,19 +306,24 @@ class _CreatePlaceState extends State<CreatePlacePage> {
     );
   }
 
-  Future<void> _openImagePicker() async {
-    await _picker.pickImage(source: ImageSource.gallery).then((photo) async {
-      await ImageCropper().cropImage(
-          sourcePath: photo!.path,
-          aspectRatioPresets: [
-            CropAspectRatioPreset.square
-          ]).then((croppedPhoto) {
-        _image.value = File(croppedPhoto!.path);
-      });
-    });
+  Future<void> openImagePicker() async {
+    try {
+      final file = await _picker.pickImage(source: ImageSource.gallery);
+      final croppedFile = await ImageCropper().cropImage(
+          sourcePath: file!.path,
+          aspectRatioPresets: [CropAspectRatioPreset.square],
+          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+          uiSettings: [
+            IOSUiSettings(
+                doneButtonTitle: "Confirmer", cancelButtonTitle: "Annuler")
+          ]);
+      _image.value = File(croppedFile!.path);
+    } catch (e) {
+      // Annulé
+    }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
+  Future<void> selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate.value,
@@ -402,59 +337,53 @@ class _CreatePlaceState extends State<CreatePlacePage> {
   }
 
   void createPlace() async {
-    if (nameTextController.text.isEmpty || selectedPosition.value == null) {
-      Get.snackbar("Erreur lors de la création du lieu",
-          "Merci de remplir tous les champs obligatoires.",
-          backgroundColor: Colors.white);
-      return;
-    }
-
-    Get.defaultDialog(
-      title: "Création du lieu...",
-      content: CircularProgressIndicator(
-        color: Colors.blue,
-      ),
-      barrierDismissible: false,
-    );
-
-    final profileStorage = FirebaseStorage.instance.ref().child("place");
-    final userStorage = profileStorage.child(user.idFirebase);
-    final reference = userStorage.child(nameTextController.text +
-        selectedPosition.value!.latitude.toString() +
-        selectedPosition.value!.longitude.toString());
-    String imagePath = "";
-    if (_image.value != null) {
-      reference.putFile(_image.value!);
-      imagePath = reference.fullPath;
-    }
-
-    await Network()
-        .createPlace(
-            nameTextController.text,
-            user.id,
-            withWhoTextController.text,
-            imagePath,
-            selectedPosition.value!,
-            selectedDate.value,
-            selectedDropDownValue,
-            noteTextController.text)
-        .then((place) {
-      Navigator.pop(context);
-      Get.back(result: place);
-    }).onError((error, stackTrace) {
-      Navigator.pop(context);
+    try {
       Get.defaultDialog(
-        title: "Erreur de connexion",
-        content: Text("Il y a eu un problème lors de la création d'un lieu"),
-        textConfirm: "OK",
+        title: "Création du lieu...",
+        content: CircularProgressIndicator(
+          color: Colors.blue,
+        ),
+        barrierDismissible: false,
       );
-    });
+
+      if (nameTextController.text.isEmpty || selectedPosition.value == null) {
+        throw ("Merci de remplir tous les champs obligatoires.");
+      }
+
+      final profileStorage = FirebaseStorage.instance.ref().child("place");
+      final userStorage = profileStorage.child(user.idFirebase);
+      final reference = userStorage.child(nameTextController.text +
+          selectedPosition.value!.latitude.toString() +
+          selectedPosition.value!.longitude.toString());
+      String imagePath = "";
+      if (_image.value != null) {
+        reference.putFile(_image.value!);
+        imagePath = reference.fullPath;
+      }
+
+      final place = await Network().createPlace(
+          nameTextController.text,
+          user.id,
+          withWhoTextController.text,
+          imagePath,
+          selectedPosition.value!,
+          selectedDate.value,
+          selectedDropDownValue,
+          noteTextController.text);
+
+      Get.back(result: place);
+    } catch (e) {
+      Get.back();
+      Get.dialog(OkDialog(
+          titleError: "Erreur lors de la création du lieu",
+          contentError: e.toString()));
+    }
   }
 
   @override
   void initState() {
-    initialPosition = widget._initialPosition;
-    user = widget._user;
+    initialPosition = widget.initialPosition;
+    user = widget.user;
     super.initState();
   }
 }

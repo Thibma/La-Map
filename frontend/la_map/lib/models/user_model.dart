@@ -1,4 +1,4 @@
-class User {
+class ApiUser {
   final String pseudo;
   final String id;
   final String idFirebase;
@@ -6,7 +6,7 @@ class User {
   final List<dynamic> friends;
   //final DateTime lastConnexion;
 
-  const User({
+  const ApiUser({
     required this.pseudo,
     required this.id,
     required this.idFirebase,
@@ -14,8 +14,8 @@ class User {
     required this.idImage,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
+  factory ApiUser.fromJson(Map<String, dynamic> json) {
+    return ApiUser(
       pseudo: json['pseudo'],
       id: json['_id'],
       friends: json['friends'],

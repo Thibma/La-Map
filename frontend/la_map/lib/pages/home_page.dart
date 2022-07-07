@@ -4,23 +4,23 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:la_map/models/place_model.dart';
 import 'package:la_map/models/user_model.dart';
 import 'package:la_map/pages/create_place_page.dart';
+import 'package:la_map/pages/widgets/main_button.dart';
+import 'package:la_map/utils/constants.dart';
 import 'package:location/location.dart';
 import 'package:get/get.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({Key? key, required User user})
-      : _user = user,
-        super(key: key);
+  HomePage({Key? key, required this.user}) : super(key: key);
 
-  final User _user;
+  final ApiUser user;
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  late User user;
+  late ApiUser user;
   late GoogleMapController mapController;
   Location location = Location();
 
@@ -31,18 +31,48 @@ class _HomePageState extends State<HomePage> {
   final lastPlaceAdd = Rxn<Place>();
 
   void _onMapCreated(GoogleMapController controller) async {
-    Get.defaultDialog(
-      title: "Chargement...",
-      content: CircularProgressIndicator(
-        color: Colors.blue,
-      ),
-      barrierDismissible: false,
-    );
     mapController = controller;
   }
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: getLocation(),
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        child: CircularProgressIndicator(
+                          color: primaryColor,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Text("Chargement..."),
+                    ],
+                  ),
+                ),
+              );
+            case ConnectionState.done:
+              if (snapshot.data != null) {
+                return mapBuild(snapshot.data as LatLng);
+              } else {
+                return errorPage();
+              }
+            default:
+              return errorPage();
+          }
+        });
+  }
+
+  Widget mapBuild(LatLng latLng) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -54,9 +84,11 @@ class _HomePageState extends State<HomePage> {
           builder: (BuildContext context, AsyncSnapshot<String> image) {
             if (image.hasData) {
               return Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: Image.network(
-                  image.data.toString(),
+                padding: const EdgeInsets.only(left: 10),
+                child: CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    image.data.toString(),
+                  ),
                 ),
               );
             } else {
@@ -66,7 +98,7 @@ class _HomePageState extends State<HomePage> {
             }
           },
         ),
-        backgroundColor: Color(0xFF527DAA),
+        backgroundColor: primaryColor,
         actions: [
           IconButton(
               onPressed: () => {print("test")}, icon: const Icon(Icons.person))
@@ -77,8 +109,8 @@ class _HomePageState extends State<HomePage> {
           GoogleMap(
             onMapCreated: _onMapCreated,
             myLocationEnabled: true,
-            initialCameraPosition:
-                CameraPosition(target: initialPosition, zoom: 11.0),
+            myLocationButtonEnabled: false,
+            initialCameraPosition: CameraPosition(target: latLng, zoom: 15.0),
             zoomControlsEnabled: false,
           ),
           Padding(
@@ -87,23 +119,69 @@ class _HomePageState extends State<HomePage> {
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
                 onPressed: () async {
-                  lastPlaceAdd.value = await Get.to(CreatePlacePage(
-                    initialPosition: LatLng(
-                        _locationData.latitude!, _locationData.longitude!),
-                    user: user,
-                  ));
+                  lastPlaceAdd.value = await Get.to(() => CreatePlacePage(
+                        initialPosition: LatLng(
+                            _locationData.latitude!, _locationData.longitude!),
+                        user: user,
+                      ));
                   if (lastPlaceAdd.value != null) {
                     Get.snackbar("Lieu ajouté avec succès",
                         "Le lieu a bien été ajouté à la base de donnée.",
                         backgroundColor: Colors.white);
                   }
                 },
-                backgroundColor: Color(0xFF527DAA),
+                backgroundColor: primaryColor,
                 child: Icon(Icons.add),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget errorPage() {
+    return Scaffold(
+      body: Container(
+        padding: EdgeInsets.all(40),
+        alignment: Alignment.center,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Erreur lors du chargement de la carte. Vérifiez que vous avez bien acceptez toutes les permissions.",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: MainElevatedButton(
+                  onPressed: () async {
+                    openAppSettings();
+                  },
+                  textButton: "Ouvrir les paramètres",
+                  isMainButton: false,
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: MainElevatedButton(
+                  onPressed: () async {
+                    setState(() {});
+                  },
+                  textButton: "Réessayer",
+                ),
+              )
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -116,45 +194,21 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    user = widget._user;
-    getLocation();
+    user = widget.user;
     super.initState();
   }
 
-  void getLocation() async {
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
-
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        return;
-      }
+  Future<LatLng?> getLocation() async {
+    if (await Permission.location.serviceStatus.isDisabled) {
+      return null;
     }
-
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
-
-    LocationPermission permission;
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return;
-      }
+    var status = await Permission.location.request();
+    if (status.isPermanentlyDenied) {
+      return null;
     }
 
     _locationData = await location.getLocation();
-    mapController.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-        target: LatLng(_locationData.latitude!, _locationData.longitude!),
-        zoom: 16.0)));
 
-    Navigator.pop(context);
+    return LatLng(_locationData.latitude!, _locationData.longitude!);
   }
 }
