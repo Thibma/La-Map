@@ -10,9 +10,9 @@ import '../models/google_places_model.dart';
 
 class Network {
   // Malakoff
-  //final String address = "http://192.168.1.143:8000";
+  final String address = "http://192.168.1.77:8000";
 
-  final String address = "http://10.33.0.174:8000";
+  //final String address = "http://10.33.0.174:8000";
 
   // Maison
   //final String address = "http://192.168.1.33:8000";
@@ -112,7 +112,11 @@ class Network {
         ),
         headers: apiToken);
     try {
-      return List<Place>.from(apiResponse(response).message);
+      List<Place> places = [];
+      for (var element in apiResponse(response).message) {
+        places.add(Place.fromJson(element));
+      }
+      return places;
     } catch (e) {
       throw (apiResponse(response).message);
     }
@@ -126,7 +130,7 @@ class Network {
     try {
       final response = await http.get(
           Uri.parse(
-              "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&types=address&language=fr&key=AIzaSyCC12LH2apk-C8_bVFdD8AQvAlM1ZepAg0&sessiontoken=sessionToken"),
+              "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&types=address&language=fr&key=AIzaSyCC12LH2apk-C8_bVFdD8AQvAlM1ZepAg0&sessiontoken=$sessionToken"),
           headers: apiToken);
 
       if (response.statusCode == 200) {
@@ -142,6 +146,28 @@ class Network {
         }
         if (result['status'] == 'ZERO_RESULTS') {
           return [];
+        }
+      }
+
+      throw Exception('Failed to fetch suggestion');
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<GooglePlace> getDetailPlace(
+      String placeId, String sessionToken) async {
+    try {
+      final response = await http.get(
+          Uri.parse(
+              "https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyCC12LH2apk-C8_bVFdD8AQvAlM1ZepAg0&sessiontoken=$sessionToken"),
+          headers: apiToken);
+
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        if (result['status'] == 'OK') {
+          final googleResponse = GoogleMapsResponseDetail.fromJson(result);
+          return GooglePlace.fromJson(googleResponse.result);
         }
       }
 

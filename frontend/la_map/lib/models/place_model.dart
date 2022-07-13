@@ -1,6 +1,7 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Place {
+  final String id;
   final String name;
   final String userId;
   final String? withWho;
@@ -11,7 +12,8 @@ class Place {
   final String? note;
 
   const Place(
-      {required this.name,
+      {required this.id,
+      required this.name,
       required this.userId,
       this.withWho,
       this.photo,
@@ -22,6 +24,7 @@ class Place {
 
   factory Place.fromJson(Map<String, dynamic> json) {
     return Place(
+      id: json['_id'],
       name: json['name'],
       userId: json['userId'],
       withWho: json['withWho'],

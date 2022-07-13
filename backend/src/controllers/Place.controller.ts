@@ -7,6 +7,7 @@ export class PlaceController {
 
     constructor() {
         this.createPlace = this.createPlace.bind(this);
+        this.getAllPlacesByUser = this.getAllPlacesByUser.bind(this);
         this.service = new PlaceService();
     }
 

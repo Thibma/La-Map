@@ -5,6 +5,8 @@ import 'package:la_map/models/place_model.dart';
 import 'package:la_map/models/user_model.dart';
 import 'package:la_map/pages/create_place_page.dart';
 import 'package:la_map/pages/widgets/main_button.dart';
+import 'package:la_map/pages/widgets/popover.dart';
+import 'package:la_map/services/network.dart';
 import 'package:la_map/utils/constants.dart';
 import 'package:location/location.dart';
 import 'package:get/get.dart';
@@ -23,6 +25,7 @@ class _HomePageState extends State<HomePage> {
   late ApiUser user;
   late GoogleMapController mapController;
   Location location = Location();
+  List<Marker> userPlaces = [];
 
   late LocationData _locationData;
 
@@ -106,12 +109,52 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Stack(
         children: [
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            initialCameraPosition: CameraPosition(target: latLng, zoom: 15.0),
-            zoomControlsEnabled: false,
+          FutureBuilder(
+            future: Network().getUserPlaces(user.id),
+            builder: (context, data) {
+              if (data.connectionState == ConnectionState.waiting) {
+                return Scaffold(
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          child: CircularProgressIndicator(
+                            color: primaryColor,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Text("Chargement..."),
+                      ],
+                    ),
+                  ),
+                );
+              } else {
+                if (data.hasData) {
+                  for (Place place in data.data as List<Place>) {
+                    userPlaces.add(Marker(
+                        markerId: MarkerId(place.id),
+                        position: LatLng(place.coordinates.latitude,
+                            place.coordinates.longitude),
+                        onTap: () => onMarkerTap(place),
+                        icon: BitmapDescriptor.defaultMarkerWithHue(
+                            BitmapDescriptor.hueGreen)));
+                  }
+                }
+                return GoogleMap(
+                  onMapCreated: _onMapCreated,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  initialCameraPosition:
+                      CameraPosition(target: latLng, zoom: 15.0),
+                  zoomControlsEnabled: false,
+                  markers: Set<Marker>.of(userPlaces),
+                );
+              }
+            },
           ),
           Padding(
             padding: const EdgeInsets.all(20.0),
@@ -138,6 +181,25 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+
+  void onMarkerTap(Place place) {
+    showModalBottomSheet(
+        barrierColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        context: context,
+        builder: (context) {
+          return Popover(
+              child: Container(
+            height: 200,
+            child: Column(children: [
+              Text(
+                place.name,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+              )
+            ]),
+          ));
+        });
   }
 
   Widget errorPage() {

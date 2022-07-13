@@ -10,26 +10,16 @@ class Suggestion {
 }
 
 class GooglePlace {
-  String street;
-  String city;
-  String zipCode;
   double longitude;
   double latitude;
 
   GooglePlace({
-    required this.street,
-    required this.city,
-    required this.zipCode,
     required this.longitude,
     required this.latitude,
   });
 
   factory GooglePlace.fromJson(Map<String, dynamic> json) {
     return GooglePlace(
-        street:
-            "${json["address_components"][0]["long_name"]} ${json["address_components"][1]["long_name"]}",
-        city: json["address_components"][2]["long_name"],
-        zipCode: json["address_components"][6]["long_name"],
         longitude: json["geometry"]["location"]["lng"],
         latitude: json["geometry"]["location"]["lat"]);
   }

@@ -28,6 +28,7 @@ class _AddLocalisationPage extends State<AddLocalisationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
           "Ajout d'une localisation",
@@ -38,6 +39,11 @@ class _AddLocalisationPage extends State<AddLocalisationPage> {
       body: Stack(
         children: [
           GoogleMap(
+            onTap: (argument) {
+              FocusManager.instance.primaryFocus?.unfocus();
+              changed.value = "";
+            },
+            myLocationButtonEnabled: false,
             onMapCreated: _onMapCreated,
             initialCameraPosition: (CameraPosition(
               target: initialPosition,
@@ -59,6 +65,9 @@ class _AddLocalisationPage extends State<AddLocalisationPage> {
                   child: TextField(
                     controller: textController,
                     onChanged: onChanged,
+                    onSubmitted: (result) {
+                      changed.value = "";
+                    },
                     //onSubmitted: onChanged,
                     keyboardType: TextInputType.streetAddress,
                     style: TextStyle(color: Colors.black),
@@ -66,6 +75,13 @@ class _AddLocalisationPage extends State<AddLocalisationPage> {
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.only(top: 15),
                         prefixIcon: Icon(Icons.search, color: primaryColor),
+                        suffixIcon: IconButton(
+                          onPressed: clearTextField,
+                          icon: Icon(
+                            Icons.clear,
+                            color: primaryColor,
+                          ),
+                        ),
                         hintText: 'Localisation',
                         hintStyle: kHintTextStyle),
                   ),
@@ -98,13 +114,21 @@ class _AddLocalisationPage extends State<AddLocalisationPage> {
                                           title: Text(
                                             snapshot.data![index].description,
                                           ),
-                                          onTap: () {
-                                            /*selectedPlaceId =
-                                            snapshot.data![index].placeId;
-                                      addressEditionController.text =
-                                            snapshot.data![index].description;
-                                      query.value =
-                                            addressEditionController.text;*/
+                                          onTap: () async {
+                                            FocusManager.instance.primaryFocus
+                                                ?.unfocus();
+                                            changed.value = "";
+                                            final selecedPlace = await Network()
+                                                .getDetailPlace(
+                                                    snapshot
+                                                        .data![index].placeId,
+                                                    Uuid().v4());
+                                            mapController.moveCamera(
+                                                CameraUpdate.newLatLngZoom(
+                                                    LatLng(
+                                                        selecedPlace.latitude,
+                                                        selecedPlace.longitude),
+                                                    16));
                                           },
                                         ),
                                       );
@@ -177,13 +201,8 @@ class _AddLocalisationPage extends State<AddLocalisationPage> {
     textController.text = placemark[0].street! + " - " + placemark[0].locality!;
   }
 
-  /*Future<List<Location>?> onChanged(String result) async {
-    List<Location> locations = await locationFromAddress(result);
-    if (locations.isEmpty) {
-      return null;
-    }
-    mapController.moveCamera(CameraUpdate.newLatLng(
-        LatLng(locations.first.latitude, locations.first.longitude)));
-    return locations;
-  }*/
+  void clearTextField() {
+    textController.clear();
+    changed.value = "";
+  }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 Color primaryColor = Color(0xFf1a237e);
-Color lightColor = Color(0x9ffc4dcc);
+Color lightColor = Color.fromARGB(159, 211, 77, 252);
 Color darkColor = Color(0xff38006b);
 
 const kLabelStyle =
